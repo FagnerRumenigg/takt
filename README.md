@@ -38,13 +38,13 @@ cd Takt
 ### 4) Configurar o `.env`
 Crie o arquivo `.env` na raiz do projeto com este conteúdo:
 ```env
-POSTGRES_DB=string
-POSTGRES_USER=string
-POSTGRES_PASSWORD=string
-SPRING_DATASOURCE_URL=string
-SPRING_DATASOURCE_USERNAME=string
-SPRING_DATASOURCE_PASSWORD=string
-JWT_SECRET=changeitchangethischangethischangeitchangeit
+POSTGRES_DB=takt
+POSTGRES_USER=takt
+POSTGRES_PASSWORD=takt
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5435/takt
+SPRING_DATASOURCE_USERNAME=takt
+SPRING_DATASOURCE_PASSWORD=takt
+JWT_SECRET=dev-secret-change-me
 ```
 
 ### 5) Subir tudo
@@ -111,6 +111,7 @@ docker compose up --build
 - os links de e-mail são simulados em log por enquanto
 - o acesso autenticado usa `Bearer <accessToken>`
 - a imagem do app é construída via `Dockerfile` e funciona em `amd64` e `arm64` usando as imagens oficiais
+- os valores do `.env` e do `application.yml` são apenas para desenvolvimento local
 
 ## Build de release
 Para gerar a imagem `arm64` localmente:
