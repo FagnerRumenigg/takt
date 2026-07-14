@@ -1,0 +1,63 @@
+package org.fr.controller;
+
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import jakarta.validation.ConstraintViolationException;
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.fr.dto.ApiResponse;
+import org.fr.dto.ErrorDto;
+import org.fr.exception.UnauthorizedException;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
+        log.warn("Validation error on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        String details = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        ErrorDto err = new ErrorDto("Validation failed", details, HttpStatus.BAD_REQUEST.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleConstraint(ConstraintViolationException ex, HttpServletRequest req) {
+        log.warn("Constraint violation on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        String details = ex.getConstraintViolations().stream()
+                .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
+                .collect(Collectors.joining("; "));
+        ErrorDto err = new ErrorDto("Validation failed", details, HttpStatus.BAD_REQUEST.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleRuntime(RuntimeException ex, HttpServletRequest req) {
+        log.error("Runtime exception on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        ErrorDto err = new ErrorDto(ex.getMessage() == null ? "Internal error" : ex.getMessage(), null, HttpStatus.BAD_REQUEST.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleUnauthorized(UnauthorizedException ex, HttpServletRequest req) {
+        log.warn("Unauthorized on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        ErrorDto err = new ErrorDto(ex.getMessage(), null, HttpStatus.UNAUTHORIZED.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleException(Exception ex, HttpServletRequest req) {
+        log.error("Unhandled exception on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        ErrorDto err = new ErrorDto("Internal server error", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(err));
+    }
+}

@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: takt-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-takt}
+      POSTGRES_USER: ${POSTGRES_USER:-takt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-takt}
+    ports:
+      - "5435:5432"
+    volumes:
+      - takt-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: takt-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/takt
+      SPRING_DATASOURCE_USERNAME: takt
+      SPRING_DATASOURCE_PASSWORD: takt
+      JWT_SECRET: ${JWT_SECRET:-changeitchangethischangethischangeitchangeit}
+    ports:
+      - "8080:8080"
+
+volumes:
+  takt-postgres-data:
