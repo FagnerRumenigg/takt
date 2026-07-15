@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/takt/categories")
 @RequiredArgsConstructor
 @Tag(name = "Categories", description = "Categorias globais e do usuário")
 @SecurityRequirement(name = "bearerAuth")

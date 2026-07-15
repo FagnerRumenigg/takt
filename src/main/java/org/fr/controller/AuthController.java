@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/takt/auth")
 @RequiredArgsConstructor
 @Tag(name = "Auth", description = "Autenticação e recuperação de senha")
 public class AuthController {

@@ -58,12 +58,12 @@ Depois disso:
 
 ### 6) Testar no Swagger
 1. Abra o Swagger.
-2. Faça `POST /api/auth/register`.
+2. Faça `POST /takt/auth/register`.
 3. Veja o token de confirmação nos logs do container `takt-app`.
-4. Faça `POST /api/auth/confirm-email?token=...`.
-5. Faça `POST /api/auth/login`.
+4. Faça `POST /takt/auth/confirm-email?token=...`.
+5. Faça `POST /takt/auth/login`.
 6. Clique em `Authorize` e cole `Bearer <accessToken>`.
-7. Teste `GET /api/auth/info`.
+7. Teste `GET /takt/auth/info`.
 
 ### 7) Resetar tudo
 Se precisar começar do zero:
@@ -89,22 +89,28 @@ docker compose up --build
 ## Fluxo local recomendado
 - `docker compose up --build`
 - abrir Swagger
-- usar `POST /api/auth/register`
+- usar `POST /takt/auth/register`
 - confirmar e-mail via log do container `takt-app`
 - fazer login
 - usar `Authorize` no Swagger com o access token
 
 ## Endpoints principais
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/info`
-- `PUT /api/auth/user`
-- `POST /api/auth/confirm-email`
-- `POST /api/auth/resend-confirmation`
-- `POST /api/auth/forgot-password`
-- `POST /api/auth/reset-password`
-- `POST /api/auth/refresh`
-- `POST /api/auth/logout`
+- `POST /takt/auth/register`
+- `POST /takt/auth/login`
+- `GET /takt/auth/info`
+- `PUT /takt/auth/user`
+- `POST /takt/auth/confirm-email`
+- `POST /takt/auth/resend-confirmation`
+- `POST /takt/auth/forgot-password`
+- `POST /takt/auth/reset-password`
+- `POST /takt/auth/refresh`
+- `POST /takt/auth/logout`
+- `GET /takt/categories`
+- `POST /takt/categories`
+- `PATCH /takt/categories/{id}`
+- `DELETE /takt/categories/{id}`
+- `GET /takt/productivity-levels`
+- `PATCH /takt/productivity-levels`
 
 ## Observações
 - `birthDate` usa formato `dd/MM/yyyy`
@@ -112,6 +118,7 @@ docker compose up --build
 - o acesso autenticado usa `Bearer <accessToken>`
 - a imagem do app é construída via `Dockerfile` e funciona em `amd64` e `arm64` usando as imagens oficiais
 - os valores do `.env` e do `application.yml` são apenas para desenvolvimento local
+- `POST /takt/auth/register` cria automaticamente os 4 níveis padrão de produtividade do usuário
 
 ## Build de release
 Para gerar a imagem `arm64` localmente:

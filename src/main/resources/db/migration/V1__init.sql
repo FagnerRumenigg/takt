@@ -80,3 +80,15 @@ insert into categories (id, name, color, user_id, created_at, updated_at) values
 ('99999999-9999-9999-9999-999999999999', 'Lazer', '#FF5722', null, now(), now()),
 ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Compras', '#607D8B', null, now(), now())
 on conflict do nothing;
+
+create table productivity_levels (
+    id uuid primary key,
+    user_id uuid not null references users(id) on delete cascade,
+    display_order int not null,
+    name varchar(80) not null,
+    created_at timestamptz not null,
+    updated_at timestamptz not null,
+    unique (user_id, display_order)
+);
+
+create index idx_productivity_levels_user_id on productivity_levels(user_id);

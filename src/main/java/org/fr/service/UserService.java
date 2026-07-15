@@ -7,10 +7,12 @@ import org.fr.exception.*;
 import org.fr.model.EmailConfirmationToken;
 import org.fr.model.PasswordResetToken;
 import org.fr.model.Profile;
+import org.fr.model.ProductivityLevel;
 import org.fr.model.User;
 import org.fr.repository.EmailConfirmationTokenRepository;
 import org.fr.repository.PasswordResetTokenRepository;
 import org.fr.repository.ProfileRepository;
+import org.fr.repository.ProductivityLevelRepository;
 import org.fr.repository.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,6 +39,7 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
+    private final ProductivityLevelRepository productivityLevelRepository;
     private final EmailConfirmationTokenRepository emailConfirmationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -58,6 +61,7 @@ public class UserService implements UserDetailsService {
                 .emailVerified(false)
                 .build();
         User savedUser = userRepository.save(user);
+        createDefaultProductivityLevels(savedUser);
         log.info("Finalizando register");
         return savedUser;
     }
@@ -187,6 +191,15 @@ public class UserService implements UserDetailsService {
         User savedUser = userRepository.save(user);
         log.info("Finalizando updateBasicInfo");
         return savedUser;
+    }
+
+    public void createDefaultProductivityLevels(User user) {
+        log.info("Iniciando createDefaultProductivityLevels - {}", user.getUsername());
+        productivityLevelRepository.save(ProductivityLevel.builder().user(user).displayOrder(1).name("Baixa").build());
+        productivityLevelRepository.save(ProductivityLevel.builder().user(user).displayOrder(2).name("Média").build());
+        productivityLevelRepository.save(ProductivityLevel.builder().user(user).displayOrder(3).name("Alta").build());
+        productivityLevelRepository.save(ProductivityLevel.builder().user(user).displayOrder(4).name("Muito Alta").build());
+        log.info("Finalizando createDefaultProductivityLevels");
     }
 
     public User getInfo(String username) {

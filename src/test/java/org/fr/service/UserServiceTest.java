@@ -10,6 +10,7 @@ import org.fr.model.EmailConfirmationToken;
 import org.fr.repository.EmailConfirmationTokenRepository;
 import org.fr.repository.PasswordResetTokenRepository;
 import org.fr.repository.ProfileRepository;
+import org.fr.repository.ProductivityLevelRepository;
 import org.fr.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,7 @@ class UserServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private ProfileRepository profileRepository;
+    @Mock private ProductivityLevelRepository productivityLevelRepository;
     @Mock private EmailConfirmationTokenRepository emailConfirmationTokenRepository;
     @Mock private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock private PasswordEncoder passwordEncoder;

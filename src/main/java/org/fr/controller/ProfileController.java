@@ -13,7 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/profile")
+@RequestMapping("/takt/profile")
 @RequiredArgsConstructor
 @Tag(name = "Profile", description = "Perfil do usuário autenticado")
 @SecurityRequirement(name = "bearerAuth")
