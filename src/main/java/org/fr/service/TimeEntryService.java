@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +29,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class TimeEntryService {
+
+    private static final ZoneId DEFAULT_ZONE = ZoneId.of("America/Sao_Paulo");
 
     private final TimeEntryRepository timeEntryRepository;
     private final UserService userService;
@@ -42,9 +44,17 @@ public class TimeEntryService {
 
     public List<TimeEntryResponse> listDay(String username, LocalDate day) {
         log.info("Iniciando listDay - {} - {}", username, day);
-        OffsetDateTime start = day.atStartOfDay().atOffset(ZoneOffset.ofHours(-3));
-        OffsetDateTime end = day.plusDays(1).atStartOfDay().atOffset(ZoneOffset.ofHours(-3));
-        return timeEntryRepository.findByUser_UsernameAndStartDateBetweenOrderByStartDateAsc(username, start, end).stream().map(TimeEntryResponse::from).toList();
+        return listRange(username, day, day);
+    }
+
+    public List<TimeEntryResponse> listRange(String username, LocalDate startDate, LocalDate endDate) {
+        log.info("Iniciando listRange - {} - {} - {}", username, startDate, endDate);
+        OffsetDateTime start = startDate.atStartOfDay(DEFAULT_ZONE).toOffsetDateTime();
+        OffsetDateTime end = endDate.plusDays(1).atStartOfDay(DEFAULT_ZONE).toOffsetDateTime();
+        return timeEntryRepository.findByUser_UsernameAndStartDateGreaterThanEqualAndStartDateLessThanOrderByStartDateAsc(username, start, end)
+                .stream()
+                .map(TimeEntryResponse::from)
+                .toList();
     }
 
     public TimeEntryResponse create(String username, TimeEntryRequest request) {
@@ -58,8 +68,8 @@ public class TimeEntryService {
                 .user(user)
                 .category(category)
                 .title(request.title())
-                .startDate(request.startDate())
-                .endDate(request.endDate())
+                .startDate(request.startDate().atZone(DEFAULT_ZONE).toOffsetDateTime())
+                .endDate(request.endDate().atZone(DEFAULT_ZONE).toOffsetDateTime())
                 .productivityLevel(level)
                 .note(request.note())
                 .build());
@@ -76,8 +86,8 @@ public class TimeEntryService {
         ProductivityLevel level = resolveProductivityLevel(username, request.productivityLevelId());
         timeEntry.setCategory(category);
         timeEntry.setTitle(request.title());
-        timeEntry.setStartDate(request.startDate());
-        timeEntry.setEndDate(request.endDate());
+        timeEntry.setStartDate(request.startDate().atZone(DEFAULT_ZONE).toOffsetDateTime());
+        timeEntry.setEndDate(request.endDate().atZone(DEFAULT_ZONE).toOffsetDateTime());
         timeEntry.setProductivityLevel(level);
         timeEntry.setNote(request.note());
         return TimeEntryResponse.from(timeEntryRepository.save(timeEntry));
@@ -97,13 +107,15 @@ public class TimeEntryService {
         if (request.note() != null && request.note().length() > 500) {
             throw new TimeEntryValidationException("Nota deve ter no máximo 500 caracteres");
         }
-        boolean conflict = timeEntryRepository.existsByUser_UsernameAndStartDateLessThanAndEndDateGreaterThan(username, request.endDate(), request.startDate());
+        OffsetDateTime start = request.startDate().atZone(DEFAULT_ZONE).toOffsetDateTime();
+        OffsetDateTime end = request.endDate().atZone(DEFAULT_ZONE).toOffsetDateTime();
+        boolean conflict = timeEntryRepository.existsByUser_UsernameAndStartDateLessThanAndEndDateGreaterThan(username, end, start);
         if (conflict && currentId != null) {
             List<TimeEntry> entries = timeEntryRepository.findByUser_UsernameOrderByStartDateAsc(username);
             conflict = entries.stream().anyMatch(entry ->
                     !entry.getId().equals(currentId) &&
-                    entry.getStartDate().isBefore(request.endDate()) &&
-                    entry.getEndDate().isAfter(request.startDate()));
+                    entry.getStartDate().isBefore(end) &&
+                    entry.getEndDate().isAfter(start));
         }
         if (conflict && currentId == null) {
             throw new TimeEntryValidationException("Já existe um bloco de tempo nesse intervalo");

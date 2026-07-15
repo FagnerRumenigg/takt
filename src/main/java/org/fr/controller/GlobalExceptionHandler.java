@@ -51,6 +51,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(err));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest req) {
+        log.warn("Illegal argument on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        String message = ex.getMessage() == null ? "Requisição inválida" : ex.getMessage();
+        HttpStatus status = message.contains("não encontrado") ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
+        if (message.contains("credenciais inválidas") || message.contains("Refresh token inválido") || message.contains("não confirmado")) {
+            status = HttpStatus.UNAUTHORIZED;
+        }
+        ErrorDto err = new ErrorDto(message, null, status.value(), req.getRequestURI());
+        return ResponseEntity.status(status).body(new ApiResponse<>(err));
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiResponse<ErrorDto>> handleUnauthorized(UnauthorizedException ex, HttpServletRequest req) {
         log.warn("Unauthorized on {} {}", req.getMethod(), req.getRequestURI(), ex);

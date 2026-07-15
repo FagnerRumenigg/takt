@@ -17,7 +17,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:dev-secret-change-me}
+    secret: ${JWT_SECRET:dev-secret-change-me-dev-secret-change-me}
     access-token-expiration-ms: 3600000
     refresh-token-expiration-ms: 2592000000
 

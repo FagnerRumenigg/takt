@@ -57,22 +57,22 @@ class ProfileServiceTest {
     @Test
     void getCurrentProfileShouldReturnLinkedProfile() {
         Profile profile = Profile.builder().role("Role").build();
-        User user = User.builder().email("a@a.com").profile(profile).build();
-        when(userRepository.findByEmail("a@a.com")).thenReturn(Optional.of(user));
+        User user = User.builder().username("fagner").profile(profile).build();
+        when(userRepository.findByUsername("fagner")).thenReturn(Optional.of(user));
 
-        var result = profileService.getCurrentProfile("a@a.com");
+        var result = profileService.getCurrentProfile("fagner");
 
         assertThat(result).isEqualTo(profile);
     }
 
     @Test
     void updateCurrentProfileShouldCreateWhenAbsent() {
-        User user = User.builder().email("a@a.com").build();
-        when(userRepository.findByEmail("a@a.com")).thenReturn(Optional.of(user));
+        User user = User.builder().username("fagner").build();
+        when(userRepository.findByUsername("fagner")).thenReturn(Optional.of(user));
         when(profileRepository.save(any(Profile.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var result = profileService.updateCurrentProfile("a@a.com", new ProfileRequest("Area", "Role", "Junior"));
+        var result = profileService.updateCurrentProfile("fagner", new ProfileRequest("Area", "Role", "Junior"));
 
         assertThat(result.getRole()).isEqualTo("Role");
         verify(userRepository).save(user);

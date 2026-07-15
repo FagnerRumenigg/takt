@@ -1,9 +1,12 @@
 package org.fr.service;
 
 import org.fr.dto.ProductivityLevelRequest;
+import org.fr.dto.ProductivityLevelCreateRequest;
 import org.fr.model.ProductivityLevel;
 import org.fr.model.User;
+import org.fr.repository.UserRepository;
 import org.fr.repository.ProductivityLevelRepository;
+import org.fr.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,12 +19,15 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductivityLevelServiceTest {
 
     @Mock private ProductivityLevelRepository productivityLevelRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private UserService userService;
 
     @InjectMocks private ProductivityLevelService productivityLevelService;
 
@@ -62,5 +68,29 @@ class ProductivityLevelServiceTest {
         assertThatThrownBy(() -> productivityLevelService.update("fagner", List.of(
                 new ProductivityLevelRequest(1, "N1")
         ))).isInstanceOf(org.fr.exception.InvalidTokenException.class);
+    }
+
+    @Test
+    void createShouldPersistLevel() {
+        User user = User.builder().username("fagner").build();
+        when(userService.loadDomainUserByUsername("fagner")).thenReturn(user);
+        when(productivityLevelRepository.findByUser_UsernameOrderByDisplayOrderAsc("fagner")).thenReturn(List.of());
+        when(productivityLevelRepository.save(any(ProductivityLevel.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = productivityLevelService.create("fagner", new ProductivityLevelCreateRequest("Foco profundo", null));
+
+        assertThat(result.displayOrder()).isEqualTo(1);
+        assertThat(result.name()).isEqualTo("Foco profundo");
+    }
+
+    @Test
+    void deleteShouldRemoveCustomLevel() {
+        User user = User.builder().username("fagner").build();
+        var level = ProductivityLevel.builder().id(UUID.randomUUID()).user(user).displayOrder(5).name("Foco").build();
+        when(productivityLevelRepository.findById(level.getId())).thenReturn(java.util.Optional.of(level));
+
+        productivityLevelService.delete("fagner", level.getId());
+
+        verify(productivityLevelRepository).delete(level);
     }
 }

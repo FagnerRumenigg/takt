@@ -2,6 +2,7 @@ package org.fr.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.fr.dto.ProfileRequest;
 import org.fr.model.Profile;
 import org.fr.model.User;
@@ -46,20 +47,22 @@ public class ProfileService {
         return profileRepository.save(profile);
     }
 
-    public Profile getCurrentProfile(String email) {
+    public Profile getCurrentProfile(String username) {
         log.info("Iniciando getCurrentProfile");
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-        if (user.getProfile() == null) {
+        Profile profile = user.getProfile();
+        if (profile == null) {
             log.info("Usuário sem profile vinculado");
-            throw new IllegalArgumentException("Usuário sem profile vinculado");
+            return null;
         }
-        return user.getProfile();
+        Hibernate.initialize(profile);
+        return profile;
     }
 
-    public Profile updateCurrentProfile(String email, ProfileRequest request) {
+    public Profile updateCurrentProfile(String username, ProfileRequest request) {
         log.info("Iniciando updateCurrentProfile");
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
         Profile profile = user.getProfile();
         if (profile == null) {
@@ -71,11 +74,14 @@ public class ProfileService {
                     .build());
             user.setProfile(profile);
             userRepository.save(user);
+            Hibernate.initialize(profile);
             return profile;
         }
         profile.setAreaOfActuation(request.areaOfActuation());
         profile.setRole(request.role());
         profile.setJobLevel(request.jobLevel());
-        return profileRepository.save(profile);
+        Profile savedProfile = profileRepository.save(profile);
+        Hibernate.initialize(savedProfile);
+        return savedProfile;
     }
 }

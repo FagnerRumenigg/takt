@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -44,14 +45,14 @@ class TimeEntryServiceTest {
         when(timeEntryRepository.existsByUser_UsernameAndStartDateLessThanAndEndDateGreaterThan(any(), any(), any())).thenReturn(false);
         when(timeEntryRepository.save(any(TimeEntry.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var response = timeEntryService.create("fagner", new TimeEntryRequest(category.getId(), "Título", OffsetDateTime.now(), OffsetDateTime.now().plusHours(1), null, "Nota"));
+        var response = timeEntryService.create("fagner", new TimeEntryRequest(category.getId(), "Título", LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, "Nota"));
 
         assertThat(response.title()).isEqualTo("Título");
     }
 
     @Test
     void listDayShouldReturnEntries() {
-        when(timeEntryRepository.findByUser_UsernameAndStartDateBetweenOrderByStartDateAsc(any(), any(), any()))
+        when(timeEntryRepository.findByUser_UsernameAndStartDateGreaterThanEqualAndStartDateLessThanOrderByStartDateAsc(any(), any(), any()))
                 .thenReturn(List.of());
 
         var result = timeEntryService.listDay("fagner", LocalDate.now());
@@ -62,7 +63,7 @@ class TimeEntryServiceTest {
     @Test
     void createShouldFailWhenDatesAreInvalid() {
         assertThatThrownBy(() -> timeEntryService.create("fagner",
-                new TimeEntryRequest(UUID.randomUUID(), "Título", OffsetDateTime.now().plusHours(1), OffsetDateTime.now(), null, null)))
+                new TimeEntryRequest(UUID.randomUUID(), "Título", LocalDateTime.now().plusHours(1), LocalDateTime.now(), null, null)))
                 .isInstanceOf(org.fr.exception.TimeEntryValidationException.class);
     }
 
@@ -70,7 +71,7 @@ class TimeEntryServiceTest {
     void createShouldFailWhenNoteIsTooLong() {
         String note = "x".repeat(501);
         assertThatThrownBy(() -> timeEntryService.create("fagner",
-                new TimeEntryRequest(UUID.randomUUID(), "Título", OffsetDateTime.now(), OffsetDateTime.now().plusHours(1), null, note)))
+                new TimeEntryRequest(UUID.randomUUID(), "Título", LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, note)))
                 .isInstanceOf(org.fr.exception.TimeEntryValidationException.class);
     }
 
@@ -85,7 +86,7 @@ class TimeEntryServiceTest {
         when(timeEntryRepository.save(any(TimeEntry.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         var response = timeEntryService.update("fagner", timeEntry.getId(),
-                new TimeEntryRequest(category.getId(), "Novo", OffsetDateTime.now(), OffsetDateTime.now().plusHours(1), null, "Nota"));
+                new TimeEntryRequest(category.getId(), "Novo", LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, "Nota"));
 
         assertThat(response.title()).isEqualTo("Novo");
     }

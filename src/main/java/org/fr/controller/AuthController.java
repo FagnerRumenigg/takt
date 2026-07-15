@@ -3,6 +3,7 @@ package org.fr.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -85,7 +86,23 @@ public class AuthController {
     @GetMapping("/info")
     @Operation(
             summary = "Retorna os dados básicos do usuário autenticado",
-            security = @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
+            security = @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth"),
+            responses = @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Dados do usuário autenticado",
+                    content = @Content(
+                            schema = @Schema(implementation = UserResponse.class),
+                            examples = @ExampleObject(name = "Info", value = """
+                                    {
+                                      "username": "fagner",
+                                      "email": "fagner@gmail.com",
+                                      "fullName": "Fagner Ramos",
+                                      "birthDate": "10/08/1995",
+                                      "emailVerified": true
+                                    }
+                                    """)
+                    )
+            )
     )
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UserResponse> info(Authentication authentication) {
@@ -132,10 +149,17 @@ public class AuthController {
     }
 
     @PostMapping("/confirm-email")
-    @Operation(summary = "Confirmar e-mail com token")
+    @Operation(
+            summary = "Confirmar e-mail com token",
+            parameters = @io.swagger.v3.oas.annotations.Parameter(
+                    name = "token",
+                    required = true,
+                    example = "token-de-confirmacao"
+            )
+    )
     public ResponseEntity<Void> confirmEmail(@RequestParam("token") String token) {
         authService.confirmEmail(token);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).build();
     }
 
     @PostMapping("/resend-confirmation")
@@ -157,13 +181,35 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    @Operation(summary = "Renovar access token")
+    @Operation(
+            summary = "Renovar access token",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = RefreshRequest.class),
+                            examples = @ExampleObject(name = "Refresh", value = """
+                                    { "refreshToken": "refresh-token-longo" }
+                                    """)
+                    )
+            )
+    )
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
         return ResponseEntity.ok(authService.refresh(request));
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "Revogar refresh token")
+    @Operation(
+            summary = "Revogar refresh token",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = LogoutRequest.class),
+                            examples = @ExampleObject(name = "Logout", value = """
+                                    { "refreshToken": "refresh-token-longo" }
+                                    """)
+                    )
+            )
+    )
     public ResponseEntity<Void> logout(@Valid @RequestBody LogoutRequest request) {
         authService.logout(request.refreshToken());
         return ResponseEntity.noContent().build();

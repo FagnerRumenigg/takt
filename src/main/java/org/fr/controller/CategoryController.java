@@ -3,6 +3,7 @@ package org.fr.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,9 +28,38 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    @Operation(summary = "Listar categorias globais e do usuário")
+    @Operation(
+            summary = "Listar categorias globais e do usuário",
+            responses = @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de categorias",
+                    content = @Content(
+                            schema = @Schema(implementation = CategoryResponse.class),
+                            examples = @ExampleObject(name = "CategoryList", value = """
+                                    [
+                                      {
+                                        "id": "11111111-1111-1111-1111-111111111111",
+                                        "name": "Programação",
+                                        "color": "#4F46E5",
+                                        "global": true
+                                      },
+                                      {
+                                        "id": "22222222-2222-2222-2222-222222222222",
+                                        "name": "Estudos",
+                                        "color": "#F97316",
+                                        "global": false
+                                      }
+                                    ]
+                                    """)
+                    )
+            )
+    )
     public ResponseEntity<List<CategoryResponse>> list(Authentication authentication) {
-        return ResponseEntity.ok(categoryService.list(authentication.getName()));
+        List<CategoryResponse> categories = categoryService.list(authentication.getName());
+        if (categories.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(categories);
     }
 
     @PostMapping
@@ -68,13 +98,13 @@ public class CategoryController {
                     )
             )
     )
-    public ResponseEntity<CategoryResponse> update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody CategoryRequest request) {
+    public ResponseEntity<CategoryResponse> update(Authentication authentication, @PathVariable("id") UUID id, @Valid @RequestBody CategoryRequest request) {
         return ResponseEntity.ok(categoryService.update(authentication.getName(), id, request));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Excluir categoria do usuário")
-    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable UUID id) {
+    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable("id") UUID id) {
         categoryService.delete(authentication.getName(), id);
         return ResponseEntity.noContent().build();
     }

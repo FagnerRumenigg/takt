@@ -25,7 +25,7 @@ class CategoryControllerTest {
 
         ResponseEntity<List<CategoryResponse>> response = controller.list(authentication);
 
-        assertThat(response.getBody()).isEmpty();
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
     }
 
     @Test

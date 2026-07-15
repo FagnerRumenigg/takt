@@ -19,9 +19,9 @@ class CalendarControllerTest {
         CalendarController controller = new CalendarController(calendarService);
         Authentication authentication = mock(Authentication.class);
         when(authentication.getName()).thenReturn("fagner");
-        when(calendarService.get("fagner", LocalDate.of(2026, 7, 8))).thenReturn(new CalendarResponse(java.util.List.of(), java.util.List.of(), java.util.List.of()));
+        when(calendarService.get("fagner", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 31))).thenReturn(new CalendarResponse(LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 31), java.util.List.of(), java.util.List.of(), java.util.List.of()));
 
-        ResponseEntity<CalendarResponse> response = controller.get(authentication, LocalDate.of(2026, 7, 8));
+        ResponseEntity<CalendarResponse> response = controller.get(authentication, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 31));
 
         assertThat(response.getBody().categories()).isEmpty();
     }

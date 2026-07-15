@@ -26,12 +26,15 @@ class CalendarServiceTest {
 
     @Test
     void getShouldAggregateData() {
-        when(timeEntryService.listDay("fagner", LocalDate.of(2026, 7, 8))).thenReturn(List.of());
+        when(timeEntryService.listRange("fagner", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 31))).thenReturn(List.of());
         when(categoryService.list("fagner")).thenReturn(List.of());
         when(productivityLevelService.list("fagner")).thenReturn(List.of());
 
-        var response = calendarService.get("fagner", LocalDate.of(2026, 7, 8));
+        var response = calendarService.get("fagner", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 31));
 
         assertThat(response.timeEntries()).isEmpty();
+        assertThat(response.date()).isEqualTo(LocalDate.of(2026, 7, 1));
+        assertThat(response.startDate()).isEqualTo(LocalDate.of(2026, 7, 1));
+        assertThat(response.endDate()).isEqualTo(LocalDate.of(2026, 7, 31));
     }
 }

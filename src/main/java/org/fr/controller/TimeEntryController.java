@@ -3,6 +3,7 @@ package org.fr.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,15 +30,54 @@ public class TimeEntryController {
     private final TimeEntryService timeEntryService;
 
     @GetMapping
-    @Operation(summary = "Listar todos os blocos de tempo")
+    @Operation(
+            summary = "Listar todos os blocos de tempo",
+            responses = @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de blocos",
+                    content = @Content(
+                            schema = @Schema(implementation = TimeEntryResponse.class),
+                            examples = @ExampleObject(name = "TimeEntryList", value = """
+                                    [
+                                      {
+                                        "id": "55555555-5555-5555-5555-555555555555",
+                                        "categoryId": "22222222-2222-2222-2222-222222222222",
+                                        "title": "Estudar Spring",
+                                        "startDate": "2026-07-15T08:00:00",
+                                        "endDate": "2026-07-15T10:00:00",
+                                        "productivityLevelId": "33333333-3333-3333-3333-333333333333",
+                                        "note": "Revisar controllers"
+                                      }
+                                    ]
+                                    """)
+                    )
+            )
+    )
     public ResponseEntity<List<TimeEntryResponse>> list(Authentication authentication) {
-        return ResponseEntity.ok(timeEntryService.list(authentication.getName()));
+        List<TimeEntryResponse> timeEntries = timeEntryService.list(authentication.getName());
+        if (timeEntries.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(timeEntries);
     }
 
     @GetMapping("/day")
-    @Operation(summary = "Listar blocos de um dia")
-    public ResponseEntity<List<TimeEntryResponse>> listDay(Authentication authentication, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {
-        return ResponseEntity.ok(timeEntryService.listDay(authentication.getName(), day));
+    @Operation(
+            summary = "Listar blocos de um dia",
+            parameters = @io.swagger.v3.oas.annotations.Parameter(name = "day", description = "Data no formato yyyy-MM-dd", example = "2026-07-15")
+    )
+    public ResponseEntity<List<TimeEntryResponse>> listDay(
+            Authentication authentication,
+            @RequestParam("day")
+            @io.swagger.v3.oas.annotations.Parameter(name = "day", example = "2026-07-15")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate day
+    ) {
+        List<TimeEntryResponse> timeEntries = timeEntryService.listDay(authentication.getName(), day);
+        if (timeEntries.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(timeEntries);
     }
 
     @PostMapping
@@ -51,8 +91,8 @@ public class TimeEntryController {
                                     {
                                       "categoryId": "uuid-da-categoria",
                                       "title": "Estudar Spring",
-                                      "startDate": "2026-07-15T08:00:00-03:00",
-                                      "endDate": "2026-07-15T10:00:00-03:00",
+                                      "startDate": "2026-07-15T08:00:00",
+                                      "endDate": "2026-07-15T10:00:00",
                                       "productivityLevelId": "uuid-do-nivel",
                                       "note": "Revisar controllers"
                                     }
@@ -75,8 +115,8 @@ public class TimeEntryController {
                                     {
                                       "categoryId": "uuid-da-categoria",
                                       "title": "Estudar Spring Boot",
-                                      "startDate": "2026-07-15T09:00:00-03:00",
-                                      "endDate": "2026-07-15T11:00:00-03:00",
+                                      "startDate": "2026-07-15T09:00:00",
+                                      "endDate": "2026-07-15T11:00:00",
                                       "productivityLevelId": "uuid-do-nivel",
                                       "note": "Atualizado"
                                     }
@@ -84,13 +124,13 @@ public class TimeEntryController {
                     )
             )
     )
-    public ResponseEntity<TimeEntryResponse> update(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody TimeEntryRequest request) {
+    public ResponseEntity<TimeEntryResponse> update(Authentication authentication, @PathVariable("id") UUID id, @Valid @RequestBody TimeEntryRequest request) {
         return ResponseEntity.ok(timeEntryService.update(authentication.getName(), id, request));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Excluir bloco de tempo")
-    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable UUID id) {
+    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable("id") UUID id) {
         timeEntryService.delete(authentication.getName(), id);
         return ResponseEntity.noContent().build();
     }

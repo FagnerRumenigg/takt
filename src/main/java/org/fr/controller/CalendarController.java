@@ -1,6 +1,10 @@
 package org.fr.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +30,37 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     @GetMapping
-    @Operation(summary = "Retorna blocos do dia, categorias e níveis")
+    @Operation(
+            summary = "Retorna o dashboard diário",
+            parameters = {
+                    @Parameter(name = "startDate", description = "Início do intervalo no formato yyyy-MM-dd", example = "2026-07-01"),
+                    @Parameter(name = "endDate", description = "Fim do intervalo no formato yyyy-MM-dd", example = "2026-07-31")
+            },
+            responses = @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Dashboard diário",
+                    content = @Content(
+                            schema = @Schema(implementation = CalendarResponse.class),
+                            examples = @ExampleObject(name = "Calendar", value = """
+                                    {
+                                      "date": "2026-07-01",
+                                      "startDate": "2026-07-01",
+                                      "endDate": "2026-07-31",
+                                      "timeEntries": [],
+                                      "categories": [],
+                                      "productivityLevels": []
+                                    }
+                                    """)
+                    )
+            )
+    )
     public ResponseEntity<CalendarResponse> get(
             Authentication authentication,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate endDate
     ) {
-        return ResponseEntity.ok(calendarService.get(authentication.getName(), date));
+        return ResponseEntity.ok(calendarService.get(authentication.getName(), startDate, endDate));
     }
 }

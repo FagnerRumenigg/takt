@@ -27,6 +27,19 @@ class ProfileControllerTest {
     }
 
     @Test
+    void getShouldReturnNoContentWhenProfileMissing() {
+        ProfileService profileService = mock(ProfileService.class);
+        ProfileController controller = new ProfileController(profileService);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("fagner");
+        when(profileService.getCurrentProfile("fagner")).thenReturn(null);
+
+        ResponseEntity<ProfileResponse> response = controller.get(authentication);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+    }
+
+    @Test
     void updateShouldDelegateToService() {
         ProfileService profileService = mock(ProfileService.class);
         ProfileController controller = new ProfileController(profileService);

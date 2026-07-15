@@ -12,70 +12,30 @@ API Java/Spring Boot para autenticação, recuperação de senha e perfil de usu
 
 ## Instalação
 
-### 1) Instalar o Docker
-- Baixe e instale o **Docker Desktop**.
-- No Mac, use a versão correta para o seu chip:
-  - `Apple Silicon` → `arm64`
-  - `Intel` → `amd64`
-- Abra o Docker Desktop e espere o status ficar como `Running`.
-- No primeiro uso, aceite as permissões que o sistema pedir.
+### Passo a passo
+1. Instale o Docker Desktop e confirme `docker --version` e `docker compose version`.
+2. Clone o repositório e entre na pasta do projeto.
+3. Crie o arquivo `.env` na raiz.
+4. Faça login no Docker Hub com `docker login` se a imagem estiver privada.
+5. Suba a aplicação com `docker compose up`.
+6. Abra `http://localhost:8080/swagger-ui.html` para testar a API.
 
-### 2) Verificar a instalação
-Abra o terminal e rode:
-```bash
-docker --version
-docker compose version
-```
-
-Se os dois comandos responderem com versão, está pronto.
-
-### 3) Baixar o projeto
-```bash
-git clone <URL_DO_REPOSITORIO>
-cd Takt
-```
-
-### 4) Configurar o `.env`
-Crie o arquivo `.env` na raiz do projeto com este conteúdo:
+### `.env`
 ```env
 POSTGRES_DB=takt
 POSTGRES_USER=takt
 POSTGRES_PASSWORD=takt
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5435/takt
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/takt
 SPRING_DATASOURCE_USERNAME=takt
 SPRING_DATASOURCE_PASSWORD=takt
-JWT_SECRET=dev-secret-change-me
+JWT_SECRET=dev-secret-change-me-dev-secret-change-me
 ```
 
-### 5) Subir tudo
-```bash
-docker compose up --build
-```
-
-Depois disso:
-- API: `http://localhost:8080`
-- Swagger: `http://localhost:8080/swagger-ui.html`
-
-### 6) Testar no Swagger
-1. Abra o Swagger.
-2. Faça `POST /takt/auth/register`.
-3. Veja o token de confirmação nos logs do container `takt-app`.
-4. Faça `POST /takt/auth/confirm-email?token=...`.
-5. Faça `POST /takt/auth/login`.
-6. Clique em `Authorize` e cole `Bearer <accessToken>`.
-7. Teste `GET /takt/auth/info`.
-
-### 7) Resetar tudo
-Se precisar começar do zero:
+### Reset
 ```bash
 docker compose down -v
-docker compose up --build
+docker compose up
 ```
-
-### Observação para Mac
-- O fluxo acima funciona igual em Mac.
-- Se for `Apple Silicon`, o Docker usa `arm64` automaticamente nas imagens oficiais.
-- Se algo falhar, confira se o Docker Desktop está aberto e ativo.
 
 ## Variáveis
 - `POSTGRES_DB` - nome do banco
@@ -87,7 +47,7 @@ docker compose up --build
 - `JWT_SECRET` - segredo do JWT
 
 ## Fluxo local recomendado
-- `docker compose up --build`
+- `docker compose up`
 - abrir Swagger
 - usar `POST /takt/auth/register`
 - confirmar e-mail via log do container `takt-app`
@@ -116,13 +76,13 @@ docker compose up --build
 - `POST /takt/time-entries`
 - `PATCH /takt/time-entries/{id}`
 - `DELETE /takt/time-entries/{id}`
-- `GET /takt/calendar?date=2026-07-08`
+- `GET /takt/calendar?startDate=2026-07-01&endDate=2026-07-31`
 
 ## Observações
 - `birthDate` usa formato `dd/MM/yyyy`
 - os links de e-mail são simulados em log por enquanto
 - o acesso autenticado usa `Bearer <accessToken>`
-- a imagem do app é construída via `Dockerfile` e funciona em `amd64` e `arm64` usando as imagens oficiais
+- a imagem do app é publicada no Docker Hub como `fagnerrumenigg/takt:1.0.0`
 - os valores do `.env` e do `application.yml` são apenas para desenvolvimento local
 - `POST /takt/auth/register` cria automaticamente os 4 níveis padrão de produtividade do usuário
 - blocos de tempo validam título obrigatório, nota opcional, limite de 500 caracteres, ordem temporal e conflito de horários
@@ -130,8 +90,8 @@ docker compose up --build
 - o seed inicial cria categorias globais padrão: Reunião, Programação, Estudo, Pausa, Almoço e Exercício
 
 ## Build de release
-Para gerar a imagem `arm64` localmente:
+Para gerar e publicar a imagem `arm64`:
 ```bash
-mvn -Pbuild-image clean package
+mvn clean install -Pbuild-image
 ```
-Esse perfil executa o build da aplicação e gera a imagem Docker para `linux/arm64`.
+Esse perfil faz push da imagem Docker para `linux/arm64` no Docker Hub.

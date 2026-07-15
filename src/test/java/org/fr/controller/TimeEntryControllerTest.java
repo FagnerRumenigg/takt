@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +27,7 @@ class TimeEntryControllerTest {
 
         ResponseEntity<List<TimeEntryResponse>> response = controller.list(authentication);
 
-        assertThat(response.getBody()).isEmpty();
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
     }
 
     @Test
@@ -38,7 +38,7 @@ class TimeEntryControllerTest {
         when(authentication.getName()).thenReturn("fagner");
         when(service.create(eq("fagner"), any())).thenReturn(TimeEntryResponse.builder().id(UUID.randomUUID()).title("Título").build());
 
-        ResponseEntity<TimeEntryResponse> response = controller.create(authentication, new TimeEntryRequest(UUID.randomUUID(), "Título", OffsetDateTime.now(), OffsetDateTime.now().plusHours(1), null, "Nota"));
+        ResponseEntity<TimeEntryResponse> response = controller.create(authentication, new TimeEntryRequest(UUID.randomUUID(), "Título", LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, "Nota"));
 
         assertThat(response.getBody().title()).isEqualTo("Título");
     }
