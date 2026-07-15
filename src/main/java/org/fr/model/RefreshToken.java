@@ -35,9 +35,19 @@ public class RefreshToken {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
     @PrePersist
     void prePersist() {
-        createdAt = OffsetDateTime.now();
+        var now = OffsetDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = OffsetDateTime.now();
     }
 
     public static RefreshToken of(RefreshToken source) {
@@ -51,6 +61,7 @@ public class RefreshToken {
                 .expiresAt(source.getExpiresAt())
                 .revoked(source.isRevoked())
                 .createdAt(source.getCreatedAt())
+                .updatedAt(source.getUpdatedAt())
                 .build();
     }
 }

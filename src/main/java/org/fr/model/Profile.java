@@ -3,6 +3,7 @@ package org.fr.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -26,6 +27,24 @@ public class Profile {
 
     @Column(name = "job_level", nullable = false, length = 120)
     private String jobLevel;
+
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    @PrePersist
+    void prePersist() {
+        var now = OffsetDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = OffsetDateTime.now();
+    }
 
     public static Profile of(Profile source) {
         if (source == null) {

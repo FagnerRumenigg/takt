@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.fr.dto.ApiResponse;
 import org.fr.dto.ErrorDto;
+import org.fr.exception.CategoryNotFoundException;
+import org.fr.exception.ForbiddenCategoryOperationException;
 import org.fr.exception.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +54,20 @@ public class GlobalExceptionHandler {
         log.warn("Unauthorized on {} {}", req.getMethod(), req.getRequestURI(), ex);
         ErrorDto err = new ErrorDto(ex.getMessage(), null, HttpStatus.UNAUTHORIZED.value(), req.getRequestURI());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleCategoryNotFound(CategoryNotFoundException ex, HttpServletRequest req) {
+        log.warn("Category not found on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        ErrorDto err = new ErrorDto(ex.getMessage(), null, HttpStatus.NOT_FOUND.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(ForbiddenCategoryOperationException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleForbiddenCategory(ForbiddenCategoryOperationException ex, HttpServletRequest req) {
+        log.warn("Forbidden category operation on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        ErrorDto err = new ErrorDto(ex.getMessage(), null, HttpStatus.FORBIDDEN.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse<>(err));
     }
 
     @ExceptionHandler(Exception.class)

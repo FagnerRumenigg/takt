@@ -35,9 +35,19 @@ public class EmailConfirmationToken {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
     @PrePersist
     void prePersist() {
-        createdAt = OffsetDateTime.now();
+        var now = OffsetDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = OffsetDateTime.now();
     }
 
     public static EmailConfirmationToken of(EmailConfirmationToken source) {
@@ -51,6 +61,7 @@ public class EmailConfirmationToken {
                 .expiresAt(source.getExpiresAt())
                 .used(source.isUsed())
                 .createdAt(source.getCreatedAt())
+                .updatedAt(source.getUpdatedAt())
                 .build();
     }
 }
