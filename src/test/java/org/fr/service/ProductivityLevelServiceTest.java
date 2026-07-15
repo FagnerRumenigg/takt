@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -54,5 +55,12 @@ class ProductivityLevelServiceTest {
         ));
 
         assertThat(result.get(0).name()).isEqualTo("N1");
+    }
+
+    @Test
+    void updateShouldFailWithWrongSize() {
+        assertThatThrownBy(() -> productivityLevelService.update("fagner", List.of(
+                new ProductivityLevelRequest(1, "N1")
+        ))).isInstanceOf(org.fr.exception.InvalidTokenException.class);
     }
 }

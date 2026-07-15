@@ -111,6 +111,12 @@ docker compose up --build
 - `DELETE /takt/categories/{id}`
 - `GET /takt/productivity-levels`
 - `PATCH /takt/productivity-levels`
+- `GET /takt/time-entries`
+- `GET /takt/time-entries/day`
+- `POST /takt/time-entries`
+- `PATCH /takt/time-entries/{id}`
+- `DELETE /takt/time-entries/{id}`
+- `GET /takt/calendar?date=2026-07-08`
 
 ## Observações
 - `birthDate` usa formato `dd/MM/yyyy`
@@ -119,6 +125,9 @@ docker compose up --build
 - a imagem do app é construída via `Dockerfile` e funciona em `amd64` e `arm64` usando as imagens oficiais
 - os valores do `.env` e do `application.yml` são apenas para desenvolvimento local
 - `POST /takt/auth/register` cria automaticamente os 4 níveis padrão de produtividade do usuário
+- blocos de tempo validam título obrigatório, nota opcional, limite de 500 caracteres, ordem temporal e conflito de horários
+- `GET /takt/calendar` reúne blocos do dia, categorias e níveis de produtividade para o dashboard diário
+- o seed inicial cria categorias globais padrão: Reunião, Programação, Estudo, Pausa, Almoço e Exercício
 
 ## Build de release
 Para gerar a imagem `arm64` localmente:

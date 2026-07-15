@@ -14,6 +14,8 @@ import org.fr.dto.ErrorDto;
 import org.fr.exception.CategoryNotFoundException;
 import org.fr.exception.ForbiddenCategoryOperationException;
 import org.fr.exception.UnauthorizedException;
+import org.fr.exception.TimeEntryNotFoundException;
+import org.fr.exception.TimeEntryValidationException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.stream.Collectors;
@@ -68,6 +70,20 @@ public class GlobalExceptionHandler {
         log.warn("Forbidden category operation on {} {}", req.getMethod(), req.getRequestURI(), ex);
         ErrorDto err = new ErrorDto(ex.getMessage(), null, HttpStatus.FORBIDDEN.value(), req.getRequestURI());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(TimeEntryNotFoundException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleTimeEntryNotFound(TimeEntryNotFoundException ex, HttpServletRequest req) {
+        log.warn("Time entry not found on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        ErrorDto err = new ErrorDto(ex.getMessage(), null, HttpStatus.NOT_FOUND.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(err));
+    }
+
+    @ExceptionHandler(TimeEntryValidationException.class)
+    public ResponseEntity<ApiResponse<ErrorDto>> handleTimeEntryValidation(TimeEntryValidationException ex, HttpServletRequest req) {
+        log.warn("Time entry validation on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        ErrorDto err = new ErrorDto(ex.getMessage(), null, HttpStatus.BAD_REQUEST.value(), req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(err));
     }
 
     @ExceptionHandler(Exception.class)
