@@ -143,6 +143,29 @@
                         <version>3.5.0</version>
                         <executions>
                             <execution>
+                                <id>ensure-buildx-builder</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>buildx</argument>
+                                        <argument>create</argument>
+                                        <argument>--name</argument>
+                                        <argument>takt-builder</argument>
+                                        <argument>--driver</argument>
+                                        <argument>docker-container</argument>
+                                        <argument>--use</argument>
+                                    </arguments>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>build-arm64-image</id>
                                 <phase>install</phase>
                                 <goals>
@@ -153,8 +176,10 @@
                                     <arguments>
                                         <argument>buildx</argument>
                                         <argument>build</argument>
+                                        <argument>--builder</argument>
+                                        <argument>takt-builder</argument>
                                         <argument>--platform</argument>
-                                        <argument>linux/arm64</argument>
+                                        <argument>linux/amd64,linux/arm64</argument>
                                         <argument>--push</argument>
                                         <argument>-t</argument>
                                         <argument>${docker.image.name}:${project.version}</argument>

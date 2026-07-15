@@ -94,4 +94,4 @@ Para gerar e publicar a imagem `arm64`:
 ```bash
 mvn clean install -Pbuild-image
 ```
-Esse perfil faz push da imagem Docker para `linux/arm64` no Docker Hub.
+Esse perfil faz push da imagem Docker para `linux/amd64` e `linux/arm64` no Docker Hub.
